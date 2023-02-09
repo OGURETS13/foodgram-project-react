@@ -18,16 +18,17 @@ class Ingredient(models.Model):
 
 class Tag(models.Model):
     name = models.CharField(
-        max_length=25,
+        max_length=200,
         null=False,
         blank=False,
         unique=True
     )
     color = models.CharField(
-        max_length=6,
+        max_length=7,
         unique=True
     )
     slug = models.SlugField(
+        max_length=200,
         unique=True
     )
 

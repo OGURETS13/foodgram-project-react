@@ -1,7 +1,20 @@
+import base64
+
+from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
+from recipes.models import Recipe, Tag
 from users.models import User
+
+
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+        return super().to_internal_value(data)
 
 
 class CustomUserSerializer(UserSerializer):
@@ -44,3 +57,34 @@ class SubscribeSerializer(CustomUserSerializer):
             # 'is_subscribed',
             # 'recipes',
         )
+
+
+class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True
+    )
+    image = Base64ImageField(required=False, allow_null=True)
+    author = CustomUserSerializer(many=False, required=False)
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'ingredients',
+            'tags',
+            'author',
+            'image',
+            'name',
+            'text',
+            'cooking_time'
+        )
+        read_only_fields = ('author',)
+        extra_kwargs = {"ingredients": {"required": False, "allow_null": True}}
+
+    def validate_cooking_time(self, value):
+        if value < 1:
+            raise serializers.ValidationError(
+                "Время готовки должно быть не меньше 1"
+            )
+        return value
