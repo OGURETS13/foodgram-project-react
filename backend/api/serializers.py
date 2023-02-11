@@ -4,7 +4,7 @@ from django.core.files.base import ContentFile
 from djoser.serializers import UserSerializer
 from rest_framework import serializers
 
-from recipes.models import Recipe, Tag
+from recipes.models import Ingredient, Recipe, Tag
 from users.models import User
 
 
@@ -18,7 +18,8 @@ class Base64ImageField(serializers.ImageField):
 
 
 class CustomUserSerializer(UserSerializer):
-    # is_subscribed = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = (
@@ -28,10 +29,23 @@ class CustomUserSerializer(UserSerializer):
             'email',
             'first_name',
             'last_name',
+            'is_subscribed',
             'following',
             'followers'
         )
         extra_kwargs = {'password': {'write_only': True, 'min_length': 8}}
+        read_only_fields = ('following', 'followers')
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request:
+            user = request.user
+            try:
+                if obj in user.following.all():
+                    return True
+                return False
+            except (AttributeError):
+                return False
 
     def create(self, validated_data):
         user = User(
@@ -59,19 +73,41 @@ class SubscribeSerializer(CustomUserSerializer):
         )
 
 
-class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
-    tags = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(),
-        many=True
-    )
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = (
+            'id',
+            'name',
+            'color',
+            'slug'
+        )
+
+
+class IngredientSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Ingredient
+        fields = (
+            'id',
+            'name',
+            'measurement_unit'
+        )
+
+
+class NewSerializerABetterOne(serializers.ModelSerializer):
+    tags = TagSerializer(many=True, required=False)
     image = Base64ImageField(required=False, allow_null=True)
     author = CustomUserSerializer(many=False, required=False)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
         fields = (
             'id',
             'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
             'tags',
             'author',
             'image',
@@ -82,9 +118,53 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         read_only_fields = ('author',)
         extra_kwargs = {"ingredients": {"required": False, "allow_null": True}}
 
+    def get_is_favorited(self, obj):
+        request = self.context.get('request')
+        if request:
+            user = request.user
+            try:
+                if obj in user.favorites.all():
+                    return True
+                return False
+            except (AttributeError):
+                return False
+
+    def get_is_in_shopping_cart(self, obj):
+        request = self.context.get('request')
+        if request:
+            user = request.user
+            try:
+                if obj in user.shopping_cart.all():
+                    return True
+                return False
+            except (AttributeError):
+                return False
+
     def validate_cooking_time(self, value):
         if value < 1:
             raise serializers.ValidationError(
                 "Время готовки должно быть не меньше 1"
             )
         return value
+
+
+class RecipeCreateUpdateSerializer(NewSerializerABetterOne):
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True,
+        allow_null=True
+    )
+
+    class Meta:
+        model = Recipe
+        fields = (
+            'id',
+            'ingredients',
+            'tags',
+            'image',
+            'name',
+            'text',
+            'cooking_time'
+        )
+        read_only_fields = ('author',)
+        extra_kwargs = {"ingredients": {"required": False, "allow_null": True}}

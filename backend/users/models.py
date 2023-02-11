@@ -24,9 +24,13 @@ class User(AbstractUser):
         related_name='followers',
         symmetrical=False
     )
-    favourites = models.ManyToManyField(
+    favorites = models.ManyToManyField(
         'recipes.Recipe',
         related_name='recipe_fans'
+    )
+    shopping_cart = models.ManyToManyField(
+        'recipes.Recipe',
+        related_name='shoppers'
     )
 
     class Meta:
