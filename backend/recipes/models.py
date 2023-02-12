@@ -15,6 +15,9 @@ class Ingredient(models.Model):
         blank=False
     )
 
+    def __str__(self):
+        return self.name
+
 
 class Tag(models.Model):
     name = models.CharField(
@@ -40,6 +43,7 @@ class Recipe(models.Model):
     name = models.CharField(max_length=200, null=False, blank=False)
     tags = models.ManyToManyField(
         Tag,
+        symmetrical=False,
         related_name='recipes',
     )
     author = models.ForeignKey(
@@ -70,4 +74,4 @@ class IngredientRecipe(models.Model):
         on_delete=models.CASCADE,
         related_name='ingredients'
     )
-    amount = models.FloatField()
+    amount = models.IntegerField()

@@ -14,7 +14,7 @@ from .serializers import (
     CustomUserSerializer,
     IngredientSerializer,
     RecipeCreateUpdateSerializer,
-    NewSerializerABetterOne,
+    ListRetrieveRecipeSerializer,
     TagSerializer
 )
 
@@ -30,27 +30,27 @@ class APISubscribe(APIView):
         target = get_object_or_404(User, pk=pk)
         user = self.request.user
         user.following.add(target)
-        serializer = CustomUserSerializer(target)
+        serializer = CustomUserSerializer(target, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class APIFavourite(APIView):
+class APIFavorite(APIView):
     def post(self, request, *args, **kwargs):
         pk = self.kwargs['pk']
         recipe = get_object_or_404(Recipe, pk=pk)
         user = self.request.user
-        user.favourites.add(recipe)
-        serializer = RecipeCreateUpdateSerializer(recipe)
+        user.favorites.add(recipe)
+        serializer = RecipeCreateUpdateSerializer(recipe, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class APIToShoppingCart(APIView):
-    def post(self, request, **kwargs):
+    def post(self, request, *args, **kwargs):
         pk = self.kwargs['pk']
         recipe = get_object_or_404(Recipe, pk=pk)
-        user = self.request.user
+        user = request.user
         user.shopping_cart.add(recipe)
-        serializer = RecipeCreateUpdateSerializer(recipe)
+        serializer = RecipeCreateUpdateSerializer(recipe, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -79,12 +79,12 @@ class RecipeViewset(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeCreateUpdateSerializer
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('author', 'tags')
+    filterset_class = RecipeFilter
 
-    def get_serializer(self, *args, **kwargs):
+    def get_serializer_class(self):
         if (self.action == 'list') or (self.action == 'retrieve'):
-            return NewSerializerABetterOne(*args, **kwargs)
-        return self.serializer_class(*args, **kwargs)
+            return ListRetrieveRecipeSerializer
+        return self.serializer_class
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
