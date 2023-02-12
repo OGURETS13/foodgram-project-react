@@ -111,9 +111,9 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientRecipeSerializer(serializers.ModelSerializer):
-    id = serializers.SerializerMethodField()
+    id = serializers.IntegerField()
     name = serializers.SerializerMethodField()
-    measurment_unit = serializers.SerializerMethodField()
+    measurement_unit = serializers.SerializerMethodField()
     amount = serializers.IntegerField()
 
     class Meta:
@@ -122,7 +122,7 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
             'id',
             'name',
             'amount',
-            'measurment_unit'
+            'measurement_unit'
         )
         read_only_fields = ('name',)
 
@@ -132,8 +132,8 @@ class IngredientRecipeSerializer(serializers.ModelSerializer):
     def get_name(self, obj):
         return obj.ingredient.name
 
-    def get_measurment_unit(self, obj):
-        return obj.ingredient.measurment_unit
+    def get_measurement_unit(self, obj):
+        return obj.ingredient.measurement_unit
 
 
 class ListRetrieveRecipeSerializer(serializers.ModelSerializer):
@@ -199,19 +199,17 @@ class RecipeCreateUpdateSerializer(ListRetrieveRecipeSerializer):
 
     def create(self, validated_data):
         ingredients = validated_data.pop('ingredients')
-        tags_pk = validated_data.pop('tags')
+        tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
         for ingredient in ingredients:
-            # raise Exception(ingredients)
-            ingredient_obj = get_object_or_404(Ingredient, id=ingredient.get('amount'))
+            ingredient_obj = get_object_or_404(Ingredient, pk=ingredient.get('id'))
             IngredientRecipe.objects.create(
                 ingredient=ingredient_obj,
                 recipe=recipe,
                 amount=ingredient['amount']
             )
-        for tag_pk in tags_pk:
-            tag = get_object_or_404(Tag, pk=tag_pk)
-            Recipe.tags.add(tag)
+        for tag in tags:
+            recipe.tags.add(tag)
         return recipe
 
     def to_representation(self, instance):
