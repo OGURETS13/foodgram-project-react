@@ -13,6 +13,8 @@ djangorestframework==3.14.0
 djangorestframework-simplejwt==4.8.0
 djoser==2.1.0
 flake8==5.0.4
+fonttools==4.38.0
+fpdf2==2.6.1
 idna==3.4
 importlib-metadata==1.7.0
 itypes==1.2.0

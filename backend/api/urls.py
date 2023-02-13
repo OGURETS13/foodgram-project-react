@@ -5,6 +5,8 @@ from .views import (
     APIFavorite,
     APISubscribe,
     APIToShoppingCart,
+    CustomUserViewSet,
+    GetShoppingCart,
     IngredientViewSet,
     RecipeViewset,
     SubscriptionList,
@@ -16,8 +18,10 @@ router = DefaultRouter()
 router.register(r'recipes', RecipeViewset, basename='recipe')
 router.register(r'tags', TagViewSet, basename='tag')
 router.register(r'ingredients', IngredientViewSet, basename='ingredient')
+router.register(r'users', CustomUserViewSet, basename='user')
 
 urlpatterns = [
+    path('recipes/download_shopping_cart/', GetShoppingCart.as_view()),
     path('recipes/<int:pk>/favorite/', APIFavorite.as_view()),
     path('recipes/<int:pk>/shopping_cart/', APIToShoppingCart.as_view()),
     path('users/<int:pk>/subscribe/', APISubscribe.as_view()),

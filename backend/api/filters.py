@@ -40,7 +40,3 @@ class RecipeFilter(filters.FilterSet):
     class Meta:
         model = Recipe
         fields = ['tags__slug', 'author']
-
-
-# class is_favorited(filters.BaseFilterBackend):
-#     def filter_queryset(self, request, queryset, view):
