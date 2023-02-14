@@ -172,11 +172,6 @@ class RecipeViewset(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
-    # def get_permissions(self):
-    #     if self.action in ['retrieve', 'list']:
-    #         return (AllowAny(),)
-    #     return super().get_permissions()
-
     def get_serializer_class(self):
         user = self.request.user
         if (self.action == 'list') or (self.action == 'retrieve'):

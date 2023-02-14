@@ -36,12 +36,8 @@ class CustomUserSerializer(UserSerializer):
         request = self.context.get('request')
         if request:
             user = request.user
-            try:
-                if obj in user.following.all():
-                    return True
-                return False
-            except (AttributeError):
-                return False
+            if user.is_authenticated:
+                return user.following.filter(pk=obj.pk).exists()
         return False
 
     def create(self, validated_data):
@@ -139,13 +135,9 @@ class AnonymousRecipeSerializer(serializers.ModelSerializer):
 
 
 class ListRetrieveRecipeSerializer(AnonymousRecipeSerializer):
-    # tags = TagSerializer(many=True, required=False)
-    # image = Base64ImageField(required=False, allow_null=True)
     author = CustomUserSerializer(many=False, required=False)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    # ingredients = IngredientRecipeSerializer(many=True)
-    # cooking_time = serializers.IntegerField(min_value=1)
 
     class Meta:
         model = Recipe
@@ -170,15 +162,11 @@ class ListRetrieveRecipeSerializer(AnonymousRecipeSerializer):
 
     def get_is_favorited(self, obj):
         user = self.get_current_user()
-        if obj in user.favorites.all():
-            return True
-        return False
+        return user.favorites.filter(pk=obj.pk).exists()
 
     def get_is_in_shopping_cart(self, obj):
         user = self.get_current_user()
-        if obj in user.shopping_cart.all():
-            return True
-        return False
+        return user.shopping_cart.filter(pk=obj.pk).exists()
 
 
 class RecipeCreateUpdateSerializer(ListRetrieveRecipeSerializer):
@@ -201,13 +189,18 @@ class RecipeCreateUpdateSerializer(ListRetrieveRecipeSerializer):
                 Ingredient,
                 pk=ingredient.get('id')
             )
-            IngredientRecipe.objects.create(
-                ingredient=ingredient_obj,
-                recipe=recipe,
-                amount=ingredient['amount']
+            ingredient_recipe = [
+                IngredientRecipe(
+                    ingredient=ingredient_obj,
+                    recipe=recipe,
+                    amount=ingredient['amount']
+                )
+            ]
+        IngredientRecipe.objects.bulk_create(
+                ingredient_recipe,
+                ignore_conflicts=True
             )
-        for tag in tags:
-            recipe.tags.add(tag)
+        recipe.tags.set(tags)
         return recipe
 
     def update(self, instance, validated_data):
@@ -221,12 +214,18 @@ class RecipeCreateUpdateSerializer(ListRetrieveRecipeSerializer):
                     Ingredient,
                     pk=ingredient.get('id')
                 )
-                IngredientRecipe.objects.create(
-                    ingredient=ingredient_obj,
-                    recipe=recipe,
-                    amount=ingredient['amount']
+                ingredient_recipe = [
+                    IngredientRecipe(
+                        ingredient=ingredient_obj,
+                        recipe=recipe,
+                        amount=ingredient['amount']
+                    )
+                ]
+            IngredientRecipe.objects.bulk_create(
+                    ingredient_recipe,
+                    ignore_conflicts=True
                 )
-        if self.context['request'].data.get('ingredients') is not None:
+        if self.context['request'].data.get('tags') is not None:
             tags = validated_data.pop('tags')
             old_tags = recipe.tags.all()
             for old_tag in old_tags:
