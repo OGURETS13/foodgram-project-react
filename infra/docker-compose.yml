@@ -11,12 +11,15 @@ services:
   web:
     build: ../backend/
     command: python manage.py runserver 0.0.0.0:8000
+    restart: always
     volumes:
       - ../backend:/app
-    ports:
-      - 8000:8000
+      - static_value:/app/static/
+      - media_value:/app/media/
     depends_on:
       - db2
+    env_file:
+      - ./.env
 
   frontend:
     build:
@@ -27,6 +30,7 @@ services:
 
   nginx:
     image: nginx:1.19.3
+    restart: always
     ports:
       - "80:80"
     volumes:
@@ -35,7 +39,6 @@ services:
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static_value:/var/html/static/
       - media_value:/var/html/media/
-
     depends_on:
       - web
 
