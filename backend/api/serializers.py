@@ -184,18 +184,19 @@ class RecipeCreateUpdateSerializer(ListRetrieveRecipeSerializer):
         validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
+        ingredient_recipe = []
         for ingredient in non_val_ingredients:
             ingredient_obj = get_object_or_404(
                 Ingredient,
                 pk=ingredient.get('id')
             )
-            ingredient_recipe = [
+            ingredient_recipe.append(
                 IngredientRecipe(
                     ingredient=ingredient_obj,
                     recipe=recipe,
                     amount=ingredient['amount']
                 )
-            ]
+            )
         IngredientRecipe.objects.bulk_create(
                 ingredient_recipe,
                 ignore_conflicts=True
@@ -209,29 +210,26 @@ class RecipeCreateUpdateSerializer(ListRetrieveRecipeSerializer):
             non_val_ingredients = self.context['request'].data['ingredients']
             validated_data.pop('ingredients')
             recipe.ingredients.all().delete()
+            ingredient_recipe = []
             for ingredient in non_val_ingredients:
                 ingredient_obj = get_object_or_404(
                     Ingredient,
                     pk=ingredient.get('id')
                 )
-                ingredient_recipe = [
+                ingredient_recipe.append(
                     IngredientRecipe(
                         ingredient=ingredient_obj,
                         recipe=recipe,
                         amount=ingredient['amount']
                     )
-                ]
+                )
             IngredientRecipe.objects.bulk_create(
                     ingredient_recipe,
                     ignore_conflicts=True
                 )
         if self.context['request'].data.get('tags') is not None:
             tags = validated_data.pop('tags')
-            old_tags = recipe.tags.all()
-            for old_tag in old_tags:
-                recipe.tags.remove(old_tag)
-            for tag in tags:
-                recipe.tags.add(tag)
+            recipe.tags.set(tags)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
