@@ -138,7 +138,7 @@ class ListRetrieveRecipeSerializer(AnonymousRecipeSerializer):
     author = CustomUserSerializer(many=False, required=False)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
-    image = Base64ImageField(required=False, allow_null=True)
+    image = serializers.CharField(source="image.url")
 
     class Meta:
         model = Recipe
