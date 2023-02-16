@@ -12,7 +12,7 @@ services:
     image: ogurets13/foodgrambackend:latest
     volumes:
       - static_value:/app/static/
-      - media_value:/app/media/
+      - media_value:/app/media/django/
     depends_on:
       - db2
     env_file:
