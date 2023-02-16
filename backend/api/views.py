@@ -152,12 +152,14 @@ class SubscriptionList(generics.ListAPIView):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (AllowAny,)
     pagination_class = None
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    permission_classes = (AllowAny,)
     pagination_class = None
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
