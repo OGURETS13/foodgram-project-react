@@ -18,9 +18,6 @@ DEBUG = True
 # ALLOWED_HOSTS = ['*']
 ALLOWED_HOSTS = [
     '51.250.31.139',
-    '127.0.0.1',
-    'localhost',
-    'web',
 ]
 
 
