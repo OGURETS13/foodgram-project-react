@@ -35,7 +35,7 @@ services:
       - static_value:/var/html/static/django/
       - media_value:/var/html/media/
     depends_on:
-      - web
+      - backend
 
 volumes:
   static_value:
