@@ -9,7 +9,7 @@ services:
       - ./.env
 
   backend:
-    image: ogurets13/foodgrambackend:latest
+    image: ogurets13/foodgrambackend:v5
     restart: always
     volumes:
       - static_value:/app/static/
@@ -20,7 +20,7 @@ services:
       - ./.env
 
   frontend:
-    image: ogurets13/foodgramfrontend:latest
+    image: ogurets13/foodgramfrontend:v3
     volumes:
       - ../frontend/:/app/result_build/
 
