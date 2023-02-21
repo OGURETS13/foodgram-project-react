@@ -10,6 +10,7 @@ services:
 
   web:
     image: ogurets13/foodgrambackend:latest
+    restart: always
     volumes:
       - static_value:/app/static/
       - media_value:/app/media/
