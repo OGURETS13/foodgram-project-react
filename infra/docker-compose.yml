@@ -20,7 +20,7 @@ services:
       - ./.env
 
   frontend:
-    image: ogurets13/foodgramfrontend:v2
+    image: ogurets13/foodgramfrontend:latest
     volumes:
       - ../frontend/:/app/result_build/
 
