@@ -9,9 +9,10 @@ services:
       - ./.env
 
   backend:
-    image: ogurets13/foodgrambackend:v5
+    build: ../backend/ #ogurets13/foodgrambackend:v5
     restart: always
     volumes:
+      - ../backend:/app
       - static_value:/app/static/
       - media_value:/app/media/
     depends_on:
@@ -20,7 +21,7 @@ services:
       - ./.env
 
   frontend:
-    image: ogurets13/foodgramfrontend:v3
+    build: ../frontend/
     volumes:
       - ../frontend/:/app/result_build/
 
