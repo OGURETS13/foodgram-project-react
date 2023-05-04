@@ -20,4 +20,4 @@ add ingredients to database using “loadjson” command
 create some tags via admin panel  
 http://localhost/admin/
 
-You’re good to go
+You’re good to go, open it at http://localhost/
