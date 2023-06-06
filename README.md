@@ -1,8 +1,10 @@
 # Foodgram web-app
 
+
+## Description
 Cooking blog web-app. Create recipes, find other recipes by tags or ingredients, add favourites and form shopping lists.
 
-### Deployment
+## Deployment
 
 In infra folder create containers in detached mode  
 `docker-compose up -d`
